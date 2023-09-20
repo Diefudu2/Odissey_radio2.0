@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtMultimedia/QtMultimedia>
-#include <QtMultimedia/QMediaPlayer>
+#include <QtMultimedia>
+#include <QMediaPlayer>
+#include <QtWidgets>
+#include <QFileDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,7 +32,16 @@ private slots:
 
     void on_checkBox_stateChanged(int arg1);
 
+    void on_progressBar_2_valueChanged(int value);
+
+    void updateMemoryUsage();
+
 private:
     Ui::MainWindow *ui;
+    QMediaPlayer *M_Player;
+    QProgressBar *progressBar_2;
+    QLabel *memor;
+    QTimer *timer;
+
 };
 #endif // MAINWINDOW_H
