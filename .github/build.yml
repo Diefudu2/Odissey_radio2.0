@@ -1,0 +1,37 @@
+name: Build and Link
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código fuente
+      uses: actions/checkout@v2
+
+    - name: Configurar Qt
+      uses: qt/actions/setup-qt@v2
+      with:
+        qt-version: '5.15.2'
+        arch: 'linux_x64'
+
+    - name: Configurar CMake
+      uses: actions/setup-cmake@v2
+      with:
+        cmake-version: '3.24.2'
+
+    - name: Configurar GCC
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'  # Esto configurará GCC también
+
+    - name: Crear directorio de compilación
+      run: cmake -B build
+
+    - name: Compilar y enlazar
+      run: cmake --build build
+
