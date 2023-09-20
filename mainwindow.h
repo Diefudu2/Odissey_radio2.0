@@ -42,6 +42,8 @@ private:
     QProgressBar *progressBar_2;
     QLabel *memor;
     QTimer *timer;
+    QStringList folderList;
+    QStringListModel *folderListModel;
 
 };
 #endif // MAINWINDOW_H

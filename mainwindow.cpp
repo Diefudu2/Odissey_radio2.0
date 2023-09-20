@@ -3,6 +3,9 @@
 #include <QTimer>
 #include <QProcess>
 #include <cstdlib>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QStringListModel>
 bool a = true;
 
 
@@ -24,6 +27,13 @@ MainWindow::MainWindow(QWidget *parent)
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateMemoryUsage);
     timer->start(1000); // Intervalo de actualización de 1 segundo
+
+    folderListModel = new QStringListModel(this);
+    ui->listView->setModel(folderListModel);
+
+    // Inicializa folderList con las carpetas existentes en el proyecto (si las hay)
+    folderList = folderListModel->stringList();
+
 
 }
 
@@ -103,12 +113,41 @@ void MainWindow::on_Info_clicked()
 
 void MainWindow::on_Load_Library_clicked()
 {
+    QString folderPath = QFileDialog::getExistingDirectory(this, "Seleccionar carpeta", "", QFileDialog::ShowDirsOnly);
 
-    QString FileName = QFileDialog::getOpenFileName(this,tr("Selec audio file"),"",tr("MP3 file (*.mp3)"));
-    M_Player->setMedia(QUrl::fromLocalFile(FileName));
-    QFileInfo File(FileName);
-    ui->label->setText("Cancion: "+File.fileName());
+    if (!folderPath.isEmpty()) {
+        QString folderName = QFileInfo(folderPath).fileName();
 
+        // Agregar el nombre de la carpeta al modelo de datos
+        QStringList folderList = folderListModel->stringList();
+        folderList.append(folderName);
+        folderListModel->setStringList(folderList);
+
+        // Copiar la carpeta seleccionada al directorio del proyecto
+        QString projectDir = QDir::currentPath(); // Obtener el directorio actual del proyecto
+        QString destinationPath = projectDir + "/" + folderName;
+
+        QDir destinationDir(destinationPath);
+
+        if (!destinationDir.exists()) {
+            if (!QDir().mkpath(destinationPath)) {
+                QMessageBox::warning(this, tr("Error"), tr("No se pudo crear la carpeta en el proyecto."));
+                return;
+            }
+        }
+
+        // Copiar los archivos y subdirectorios de la carpeta seleccionada
+        QDir sourceDir(folderPath);
+        QStringList files = sourceDir.entryList(QDir::Files);
+        foreach (const QString &file, files) {
+            QString srcFilePath = folderPath + "/" + file;
+            QString destFilePath = destinationPath + "/" + file;
+            QFile::copy(srcFilePath, destFilePath);
+        }
+
+        // Puedes mostrar un mensaje de éxito si lo deseas
+        QMessageBox::information(this, tr("Éxito"), tr("La carpeta se ha copiado y cargado en el proyecto."));
+    }
 }
 
 
