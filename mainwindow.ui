@@ -151,7 +151,7 @@
      <number>24</number>
     </property>
     <property name="format">
-     <string/>
+     <string>%p%</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBox">
@@ -225,7 +225,7 @@
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="text">
-     <string>Load Lybrary</string>
+     <string>Load Library</string>
     </property>
    </widget>
    <widget class="QLabel" name="memor">

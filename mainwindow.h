@@ -36,14 +36,21 @@ private slots:
 
     void updateMemoryUsage();
 
+    void updateProgressBar();
+
 private:
     Ui::MainWindow *ui;
     QMediaPlayer *M_Player;
     QProgressBar *progressBar_2;
+    QProgressBar *progressBar;
     QLabel *memor;
     QTimer *timer;
+<<<<<<< HEAD
     QStringList folderList;
     QStringListModel *folderListModel;
+=======
+    QTimer *progressTimer;
+>>>>>>> 8644638 (.)
 
 };
 #endif // MAINWINDOW_H
