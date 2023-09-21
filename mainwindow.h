@@ -45,12 +45,8 @@ private:
     QProgressBar *progressBar;
     QLabel *memor;
     QTimer *timer;
-<<<<<<< HEAD
     QStringList folderList;
     QStringListModel *folderListModel;
-=======
     QTimer *progressTimer;
->>>>>>> 8644638 (.)
-
 };
 #endif // MAINWINDOW_H

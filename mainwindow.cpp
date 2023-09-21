@@ -3,13 +3,10 @@
 #include <QTimer>
 #include <QProcess>
 #include <cstdlib>
-<<<<<<< HEAD
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringListModel>
-=======
 #include <iostream>
->>>>>>> 8644638 (.)
 bool a = true;
 
 
@@ -91,7 +88,6 @@ void MainWindow::updateProgressBar()
     QMediaPlayer::State playbackState = M_Player->state();
     // Verifica si hay una canción en reproducción
     if (playbackState == QMediaPlayer::PlayingState || playbackState == QMediaPlayer::PausedState) {
-        std::cout<<"Reproduciendo " <<endl;
         // Obtiene la duración total de la canción en milisegundos
         qint64 duration = M_Player->duration();
 
@@ -104,7 +100,6 @@ void MainWindow::updateProgressBar()
         // Actualiza la barra de progreso
         ui->progressBar->setValue(progress);
         }else{
-        std::cout<<"no Reproduciendo " <<endl;
         ui->progressBar->setValue(0);
     }
 }
