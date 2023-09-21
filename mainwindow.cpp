@@ -1,12 +1,19 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include <QTimer>
 #include <QProcess>
 #include <cstdlib>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringListModel>
+<<<<<<< HEAD
 #include <QStandardItem>
+=======
+#include <iostream>
+#include <QItemSelectionModel>
+#include <QDebug>
+
+>>>>>>> f05ef26 (.)
 bool a = true;
 
 
@@ -41,13 +48,33 @@ MainWindow::MainWindow(QWidget *parent)
     // Conexión para cargar datos al seleccionar una carpeta
     connect(ui->folderListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::loadData);
 
+<<<<<<< HEAD
     connect(ui->metadataTableView, &QTableView::doubleClicked, this, &MainWindow::playAudio);
 
+=======
+    // Obtén el modelo de selección de la QTableView
+    QItemSelectionModel *selectionModel = ui->metadataTableView->selectionModel();
+
+    // Conectar la señal selectionChanged a una ranura personalizada
+    connect(selectionModel, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
+>>>>>>> f05ef26 (.)
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    QModelIndexList selectedIndexes = selected.indexes();
+    if (!selectedIndexes.isEmpty()) {
+        // Obtener el contenido de la primera columna de la fila seleccionada
+        QModelIndex firstColumnIndex = selectedIndexes.first();
+        QVariant data = ui->metadataTableView->model()->data(firstColumnIndex);
+        QString firstColumnValue = data.toString();
+        qDebug() << "Fila seleccionada: " << firstColumnIndex.row() << ", Valor de la primera columna: " << firstColumnValue;
+    }
 }
 
 void MainWindow::updateMemoryUsage()
@@ -84,6 +111,32 @@ void MainWindow::updateMemoryUsage()
     }
 }
 
+<<<<<<< HEAD
+=======
+// Función para actualizar la barra de progreso
+void MainWindow::updateProgressBar()
+{
+
+    QMediaPlayer::State playbackState = M_Player->state();
+    // Verifica si hay una canción en reproducción
+    if (playbackState == QMediaPlayer::PlayingState || playbackState == QMediaPlayer::PausedState) {
+        // Obtiene la duración total de la canción en milisegundos
+        qint64 duration = M_Player->duration();
+
+        // Obtiene el tiempo actual de reproducción en milisegundos
+        qint64 position = M_Player->position();
+
+        // Calcula el progreso como un porcentaje
+        int progress = static_cast<int>((position * 100) / duration);
+        // Actualiza la barra de progreso
+        ui->progressBar->setValue(progress);
+    }else{
+        ui->progressBar->setValue(0);
+}
+
+}
+
+>>>>>>> f05ef26 (.)
 void MainWindow::loadData(const QModelIndex &index)
 {
     if (index.isValid()) {
@@ -131,6 +184,7 @@ void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
     }
 }
 
+<<<<<<< HEAD
 void MainWindow::playAudio(const QModelIndex &index)
 {
     if (index.isValid()) {
@@ -144,6 +198,8 @@ void MainWindow::playAudio(const QModelIndex &index)
     }
 }
 
+=======
+>>>>>>> f05ef26 (.)
 
 void MainWindow::on_Previous_clicked()
 {
@@ -217,13 +273,4 @@ void MainWindow::on_Load_Library_clicked()
 }
 
 
-void MainWindow::on_checkBox_stateChanged(int arg1)
-{
-
-}
-
-void MainWindow::on_progressBar_2_valueChanged(int value)
-{
-
-}
 

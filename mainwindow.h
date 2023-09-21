@@ -41,19 +41,21 @@ private slots:
 
     void on_Load_Library_clicked();
 
-    void on_checkBox_stateChanged(int arg1);
-
-    void on_progressBar_2_valueChanged(int value);
-
     void updateMemoryUsage();
 
     void loadData(const QModelIndex &index);
 
     void loadAndDisplayCSVData(const QString &csvFilePath);
 
+<<<<<<< HEAD
     void playAudio(const QModelIndex &index);
 
 
+=======
+    void updateProgressBar();
+
+    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+>>>>>>> f05ef26 (.)
 
 private:
     Ui::MainWindow *ui;
@@ -64,6 +66,10 @@ private:
     QStringList folderList;
     QStringListModel *folderListModel;
     QStandardItemModel *metadataModel;
+<<<<<<< HEAD
 
+=======
+    QTimer *progressTimer;
+>>>>>>> f05ef26 (.)
 };
 #endif // MAINWINDOW_H
