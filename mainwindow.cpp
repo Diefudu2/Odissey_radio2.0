@@ -14,12 +14,18 @@
 bool a = true;
 
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Inicializa variables para paginación
+    totalRows = 0; // Agrega esta línea para asegurarte de que totalRows esté inicializado
+    currentPage = 0; // Agrega esta línea para asegurarte de que currentPage esté inicializado
+    paginationEnabled = false; // Inicializa la paginación como deshabilitada
+    recalculateItemsPerPage(); // Calcula el número de elementos por página
+
 
     M_Player = new QMediaPlayer;
 
@@ -43,19 +49,129 @@ MainWindow::MainWindow(QWidget *parent)
     metadataModel = new QStandardItemModel(this);
     metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length","Genre"});
     ui->metadataTableView->setModel(metadataModel);
+
     // Conexión para cargar datos al seleccionar una carpeta
     connect(ui->folderListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::loadData);
 
-    //Conexion para cargar datos al seleccionar uns libreria
+
     connect(ui->metadataTableView, &QTableView::clicked, this, &MainWindow::playAudio);
 
+    // Conecta el estado cambiado del QCheckBox al slot correspondiente
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, &MainWindow::on_checkBox_stateChanged);
 
+    // Calcula el número de elementos por página en función del tamaño de la ventana
+    int windowHeight = this->height(); // Altura de la ventana principal
+    int estimatedItemHeight = 30; // Supongamos una altura estimada de un elemento
+
+    // Inicialmente, en modo de paginación, ajusta el número de elementos por página en función del tamaño de la ventana
+    itemsPerPage = windowHeight / estimatedItemHeight;
+
+    // Restringe itemsPerPage a un valor mínimo para evitar problemas si la ventana es muy pequeña
+    int minItemsPerPage = 1; // Establece el mínimo a 1
+    if (itemsPerPage < minItemsPerPage) {
+        itemsPerPage = minItemsPerPage;
+    }
+
+    connect(ui->metadataTableView->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::onScrollValueChanged);
+    // Conecta el estado cambiado del QCheckBox al slot correspondiente
+    connect(ui->checkBox, &QCheckBox::stateChanged, this, &MainWindow::on_checkBox_stateChanged);
 }
+
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::loadData(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QString folderName = folderListModel->data(index, Qt::DisplayRole).toString();
+        QString csvFilePath = folderName + "/" + folderName + ".csv"; // Ruta relativa desde el directorio de trabajo actual
+        loadAndDisplayCSVData();
+    }
+}
+void MainWindow::recalculateItemsPerPage()
+{
+    // Calcula el número de elementos por página en función del tamaño de la ventana
+    int estimatedItemHeight = 30; // Supongamos una altura estimada de un elemento
+
+    // Restringe itemsPerPage a un valor mínimo para evitar problemas si la ventana es muy pequeña
+    int minItemsPerPage = 1; // Establece el mínimo a 1
+    itemsPerPage = ui->metadataTableView->height() / estimatedItemHeight;
+    if (itemsPerPage < minItemsPerPage) {
+        itemsPerPage = minItemsPerPage;
+    }
+}
+
+void MainWindow::loadPages(int startIndex, int endIndex)
+{
+    // Limpia el modelo actual
+    metadataModel->removeRows(0, metadataModel->rowCount());
+
+    // Carga las filas para el rango de páginas especificado
+    for (int row = startIndex; row <= endIndex; row++) {
+        QStandardItem* item = new QStandardItem(metadataModel->item(row, 0)->text());
+        metadataModel->appendRow(item);
+    }
+}
+
+
+void MainWindow::loadAndDisplayCSVData()
+{
+    // Borra el modelo actual
+    metadataModel->clear();
+    metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length", "Genre"});
+
+    // Obtén la carpeta actualmente seleccionada
+    QString folderName = folderListModel->data(ui->folderListView->currentIndex(), Qt::DisplayRole).toString();
+
+    // Construye la ruta completa del archivo CSV
+    QString csvFilePath = folderName + "/" + folderName + ".csv";
+
+    // Carga los metadatos desde el archivo CSV
+    QFile file(csvFilePath);
+
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            QStringList fields = line.split(',');
+
+            if (fields.size() >= 4) {
+                QString title = fields[0];
+                QString artist = fields[1];
+                QString album = fields[2];
+                QString genre = fields[3];
+
+                QList<QStandardItem*> row;
+                row << new QStandardItem(title)
+                    << new QStandardItem(artist)
+                    << new QStandardItem(album)
+                    << new QStandardItem(genre);
+
+                metadataModel->appendRow(row);
+            }
+        }
+
+        file.close();
+
+        // Actualiza la variable totalRows después de cargar los datos
+        totalRows = metadataModel->rowCount();
+
+        if (paginationEnabled) {
+            // Recalcula el número total de páginas
+            totalPages = (totalRows + itemsPerPage - 1) / itemsPerPage; // Redondea hacia arriba
+
+            // Si la paginación está habilitada, carga la página actual
+            loadPages(0, itemsPerPage * 3 - 1);
+
+        }
+    }
+}
+
 void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QModelIndexList selectedIndexes = selected.indexes();
@@ -67,6 +183,9 @@ void MainWindow::onSelectionChanged(const QItemSelection &selected, const QItemS
         qDebug() << "Fila seleccionada: " << firstColumnIndex.row() << ", Valor de la primera columna: " << firstColumnValue;
     }
 }
+
+
+
 
 void MainWindow::updateMemoryUsage()
 {
@@ -105,6 +224,29 @@ void MainWindow::updateMemoryUsage()
 
 
 
+// Función para actualizar la barra de progreso
+void MainWindow::updateProgressBar()
+{
+
+    QMediaPlayer::State playbackState = M_Player->state();
+    // Verifica si hay una canción en reproducción
+    if (playbackState == QMediaPlayer::PlayingState || playbackState == QMediaPlayer::PausedState) {
+        // Obtiene la duración total de la canción en milisegundos
+        qint64 duration = M_Player->duration();
+
+        // Obtiene el tiempo actual de reproducción en milisegundos
+        qint64 position = M_Player->position();
+
+        // Calcula el progreso como un porcentaje
+        int progress = static_cast<int>((position * 100) / duration);
+        // Actualiza la barra de progreso
+        ui->progressBar->setValue(progress);
+    }else{
+        ui->progressBar->setValue(0);
+}
+
+}
+
 void MainWindow::loadData(const QModelIndex &index)
 {
     if (index.isValid()) {
@@ -114,7 +256,6 @@ void MainWindow::loadData(const QModelIndex &index)
         loadAndDisplayCSVData(csvFilePath);
     }
 }
-
 void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
 {
     // Borra el modelo actual
@@ -217,6 +358,14 @@ void MainWindow::on_Info_clicked()
 
 }
 
+void MainWindow::on_checkBox_stateChanged(int state)
+{
+    paginationEnabled = (state != Qt::Checked); // Desactivar paginación si el checkbox está marcado
+    if (paginationEnabled) {
+        loadAndDisplayCSVData(); // Cargar todos los datos
+    }
+}
+
 
 void MainWindow::on_Load_Library_clicked()
 {
@@ -257,5 +406,18 @@ void MainWindow::on_Load_Library_clicked()
     }
 }
 
+void MainWindow::onScrollValueChanged(int value)
+{
+    // Calcula las páginas que se deben cargar en función de la posición actual del scroll
+    int startIndex = (value / itemsPerPage) * itemsPerPage;
+    int endIndex = qMin(startIndex + (itemsPerPage * 3) - 1, totalRows - 1);
 
+    // Verifica si es necesario cargar más páginas
+    if (startIndex != lastLoadedPage) {
+        currentPage = startIndex / itemsPerPage;
+        loadPages(startIndex, endIndex);
+        lastLoadedPage = startIndex;
+        qDebug() << "Página actual:" << currentPage + 1;
+    }
+}
 
