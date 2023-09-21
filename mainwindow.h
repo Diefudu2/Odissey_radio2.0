@@ -47,21 +47,30 @@ private slots:
 
     void updateMemoryUsage();
 
+<<<<<<< HEAD
     void loadData(const QModelIndex &index);
 
     void loadAndDisplayCSVData(const QString &csvFilePath);
 
 
+=======
+    void updateProgressBar();
+>>>>>>> c1827f221ef26767252a17f545b008bde53b1086
 
 private:
     Ui::MainWindow *ui;
     QMediaPlayer *M_Player;
     QProgressBar *progressBar_2;
+    QProgressBar *progressBar;
     QLabel *memor;
     QTimer *timer;
     QStringList folderList;
     QStringListModel *folderListModel;
+<<<<<<< HEAD
     QStandardItemModel *metadataModel;
 
+=======
+    QTimer *progressTimer;
+>>>>>>> c1827f221ef26767252a17f545b008bde53b1086
 };
 #endif // MAINWINDOW_H
