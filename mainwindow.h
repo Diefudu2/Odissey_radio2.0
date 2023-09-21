@@ -49,9 +49,9 @@ private slots:
 
     void playAudio(const QModelIndex &index);
 
-    void updateProgressBar();
-
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+    void updateProgressBar(qint64 position);
 
 
 private:
