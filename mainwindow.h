@@ -47,29 +47,27 @@ private slots:
 
     void loadAndDisplayCSVData(const QString &csvFilePath);
 
-<<<<<<< HEAD
     void playAudio(const QModelIndex &index);
 
 
-=======
+
     void updateProgressBar();
 
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
->>>>>>> f05ef26 (.)
+
 
 private:
     Ui::MainWindow *ui;
     QMediaPlayer *M_Player;
     QProgressBar *progressBar_2;
+    QProgressBar *progressBar;
     QLabel *memor;
     QTimer *timer;
+    QTimer *timerb;
     QStringList folderList;
     QStringListModel *folderListModel;
     QStandardItemModel *metadataModel;
-<<<<<<< HEAD
-
-=======
     QTimer *progressTimer;
->>>>>>> f05ef26 (.)
+
 };
 #endif // MAINWINDOW_H

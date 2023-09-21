@@ -6,14 +6,11 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringListModel>
-<<<<<<< HEAD
 #include <QStandardItem>
-=======
 #include <iostream>
 #include <QItemSelectionModel>
 #include <QDebug>
 
->>>>>>> f05ef26 (.)
 bool a = true;
 
 
@@ -29,12 +26,17 @@ MainWindow::MainWindow(QWidget *parent)
     // Obtiene los punteros a los widgets del archivo .ui
     progressBar_2 = ui->progressBar_2;
     memor = ui->memor;
+    progressBar = ui->progressBar;
     timer = new QTimer(this);
 
     // Configura el temporizador para actualizar el uso de memoria (como se mostró anteriormente)
-    timer = new QTimer(this);
+    timerb = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::updateMemoryUsage);
+    progressBar = ui->progressBar;
+
+    connect(timerb, &QTimer::timeout, this, &MainWindow::updateProgressBar);
     timer->start(1000); // Intervalo de actualización de 1 segundo
+    timerb->start(1000); // Intervalo de actualización de 1 segundo
 
     folderListModel = new QStringListModel(this);
     ui->folderListView->setModel(folderListModel);
@@ -48,17 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     // Conexión para cargar datos al seleccionar una carpeta
     connect(ui->folderListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::loadData);
 
-<<<<<<< HEAD
-    connect(ui->metadataTableView, &QTableView::doubleClicked, this, &MainWindow::playAudio);
 
-=======
-    // Obtén el modelo de selección de la QTableView
-    QItemSelectionModel *selectionModel = ui->metadataTableView->selectionModel();
+    connect(ui->metadataTableView, &QTableView::clicked, this, &MainWindow::playAudio);
 
-    // Conectar la señal selectionChanged a una ranura personalizada
-    connect(selectionModel, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-            this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
->>>>>>> f05ef26 (.)
+
 }
 
 MainWindow::~MainWindow()
@@ -111,8 +106,7 @@ void MainWindow::updateMemoryUsage()
     }
 }
 
-<<<<<<< HEAD
-=======
+
 // Función para actualizar la barra de progreso
 void MainWindow::updateProgressBar()
 {
@@ -136,7 +130,6 @@ void MainWindow::updateProgressBar()
 
 }
 
->>>>>>> f05ef26 (.)
 void MainWindow::loadData(const QModelIndex &index)
 {
     if (index.isValid()) {
@@ -184,7 +177,7 @@ void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
     }
 }
 
-<<<<<<< HEAD
+
 void MainWindow::playAudio(const QModelIndex &index)
 {
     if (index.isValid()) {
@@ -195,11 +188,12 @@ void MainWindow::playAudio(const QModelIndex &index)
 
         M_Player->setMedia(QUrl::fromLocalFile(audioFilePath));
         M_Player->play();
+        ui->label->setText("Cancion: "+ title + ".mp3");
+    }else{
+
     }
 }
 
-=======
->>>>>>> f05ef26 (.)
 
 void MainWindow::on_Previous_clicked()
 {
@@ -209,6 +203,7 @@ void MainWindow::on_Previous_clicked()
 
 void MainWindow::on_PlayButton_clicked()
 {
+    //M_Player->setMedia(QUrl::fromLocalFile("/home/andresc/Escritorio/Odissey_radio/Canciones/believer.mp3"));
     if (a==true){
         M_Player->play();
         a=false;
