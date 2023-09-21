@@ -34,10 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, &QTimer::timeout, this, &MainWindow::updateMemoryUsage);
     progressBar = ui->progressBar;
 
-    connect(timerb, &QTimer::timeout, this, &MainWindow::updateProgressBar);
-    timer->start(1000); // Intervalo de actualización de 1 segundo
-    timerb->start(1000); // Intervalo de actualización de 1 segundo
-
     folderListModel = new QStringListModel(this);
     ui->folderListView->setModel(folderListModel);
 
@@ -50,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Conexión para cargar datos al seleccionar una carpeta
     connect(ui->folderListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::loadData);
 
-
+    //Conexion para cargar datos al seleccionar uns libreria
     connect(ui->metadataTableView, &QTableView::clicked, this, &MainWindow::playAudio);
 
 
@@ -107,28 +103,7 @@ void MainWindow::updateMemoryUsage()
 }
 
 
-// Función para actualizar la barra de progreso
-void MainWindow::updateProgressBar()
-{
 
-    QMediaPlayer::State playbackState = M_Player->state();
-    // Verifica si hay una canción en reproducción
-    if (playbackState == QMediaPlayer::PlayingState || playbackState == QMediaPlayer::PausedState) {
-        // Obtiene la duración total de la canción en milisegundos
-        qint64 duration = M_Player->duration();
-
-        // Obtiene el tiempo actual de reproducción en milisegundos
-        qint64 position = M_Player->position();
-
-        // Calcula el progreso como un porcentaje
-        int progress = static_cast<int>((position * 100) / duration);
-        // Actualiza la barra de progreso
-        ui->progressBar->setValue(progress);
-    }else{
-        ui->progressBar->setValue(0);
-}
-
-}
 
 void MainWindow::loadData(const QModelIndex &index)
 {
@@ -139,6 +114,7 @@ void MainWindow::loadData(const QModelIndex &index)
         loadAndDisplayCSVData(csvFilePath);
     }
 }
+
 void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
 {
     // Borra el modelo actual
@@ -181,16 +157,26 @@ void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
 void MainWindow::playAudio(const QModelIndex &index)
 {
     if (index.isValid()) {
-        QString title = metadataModel->item(index.row(), 0)->text(); // Obtiene el título de la canción
-        QString folderName = folderListModel->data(ui->folderListView->currentIndex(), Qt::DisplayRole).toString(); // Obtiene el nombre de la carpeta actualmente seleccionada
-
+        QString title = metadataModel->item(index.row(), 0)->text();
+        QString folderName = folderListModel->data(ui->folderListView->currentIndex(), Qt::DisplayRole).toString();
         QString audioFilePath = QDir::currentPath() + "/" + folderName + "/" + title + ".mp3";
 
         M_Player->setMedia(QUrl::fromLocalFile(audioFilePath));
-        M_Player->play();
-        ui->label->setText("Cancion: "+ title + ".mp3");
-    }else{
 
+        // Conecta la señal positionChanged del reproductor de medios a una ranura para actualizar el progreso
+        connect(M_Player, &QMediaPlayer::positionChanged, this, &MainWindow::updateProgressBar);
+
+        M_Player->play();
+        ui->label->setText("Cancion: " + title);
+    }
+}
+
+// Función para actualizar la barra de progreso
+void MainWindow::updateProgressBar(qint64 position)
+{
+    if (M_Player->duration() > 0) {
+        int progress = static_cast<int>((position * 100) / M_Player->duration());
+        ui->progressBar->setValue(progress);
     }
 }
 

@@ -51,7 +51,7 @@ private slots:
 
 
 
-    void updateProgressBar();
+    void updateProgressBar(qint64 position);
 
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
