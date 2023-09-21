@@ -183,13 +183,14 @@ void MainWindow::updateProgressBar(qint64 position)
 
 void MainWindow::on_Previous_clicked()
 {
+    qint64 newPosition = M_Player->position() - 5000; // 5000 milisegundos = 5 segundos
+    M_Player->setPosition(qMax(newPosition, qint64(0))); // Asegura que la posición no sea negativa
 
 }
 
 
 void MainWindow::on_PlayButton_clicked()
 {
-    //M_Player->setMedia(QUrl::fromLocalFile("/home/andresc/Escritorio/Odissey_radio/Canciones/believer.mp3"));
     if (a==true){
         M_Player->play();
         a=false;
@@ -204,6 +205,9 @@ void MainWindow::on_PlayButton_clicked()
 
 void MainWindow::on_Next_clicked()
 {
+    qint64 newPosition = M_Player->position() + 5000; // 5000 milisegundos = 5 segundos
+    M_Player->setPosition(qMin(newPosition, M_Player->duration())); // Asegura que la posición no supere la duración total
+
 
 }
 
