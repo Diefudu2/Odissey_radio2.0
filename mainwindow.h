@@ -48,21 +48,9 @@ private slots:
     void loadAndDisplayCSVData(const QString &csvFilePath);
 
     void playAudio(const QModelIndex &index);
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-
-    void updateProgressBar(qint64 position);
-
-=======
-    void updateProgressBar();
->>>>>>> 6cb5334 (.)
-=======
 
     void updateProgressBar();
 
->>>>>>> 6289e82 (barras)
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
 
