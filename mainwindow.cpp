@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringListModel>
+#include <QStandardItem>
 bool a = true;
 
 
@@ -29,11 +30,16 @@ MainWindow::MainWindow(QWidget *parent)
     timer->start(1000); // Intervalo de actualización de 1 segundo
 
     folderListModel = new QStringListModel(this);
-    ui->listView->setModel(folderListModel);
+    ui->folderListView->setModel(folderListModel);
 
     // Inicializa folderList con las carpetas existentes en el proyecto (si las hay)
     folderList = folderListModel->stringList();
 
+    metadataModel = new QStandardItemModel(this);
+    metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length","Genre"});
+    ui->metadataTableView->setModel(metadataModel);
+    // Conexión para cargar datos al seleccionar una carpeta
+    connect(ui->folderListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::loadData);
 
 }
 
@@ -76,6 +82,54 @@ void MainWindow::updateMemoryUsage()
     }
 }
 
+void MainWindow::loadData(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QString folderName = folderListModel->data(index, Qt::DisplayRole).toString();
+        QString csvFilePath = folderName + "/" + folderName + ".csv"; // Ruta relativa desde el directorio de trabajo actual
+
+        qDebug() << "Ruta del archivo CSV:" << csvFilePath;
+
+        loadAndDisplayCSVData(csvFilePath);
+    }
+}
+void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
+{
+    // Borra el modelo actual
+    metadataModel->clear();
+    metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length","Genre"});
+
+    // Carga los metadatos desde el archivo CSV
+    QFile file(csvFilePath);
+
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            QStringList fields = line.split(',');
+
+            if (fields.size() >= 4) {
+                QString title = fields[0];
+                QString artist = fields[1];
+                QString album = fields[2];
+                QString genre = fields [3];
+
+                QList<QStandardItem*> row;
+                row << new QStandardItem(title)
+                    << new QStandardItem(artist)
+                    << new QStandardItem(album)
+                    << new QStandardItem(genre)
+                    ;
+
+
+                metadataModel->appendRow(row);
+            }
+        }
+
+        file.close();
+    }
+}
 
 
 

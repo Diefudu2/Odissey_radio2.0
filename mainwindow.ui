@@ -123,7 +123,7 @@
      <property name="cursor">
       <cursorShape>PointingHandCursor</cursorShape>
      </property>
-     <widget class="QTableView" name="tableView">
+     <widget class="QTableView" name="metadataTableView">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -241,7 +241,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QListView" name="listView">
+   <widget class="QListView" name="folderListView">
     <property name="geometry">
      <rect>
       <x>10</x>

@@ -6,10 +6,21 @@
 #include <QMediaPlayer>
 #include <QtWidgets>
 #include <QFileDialog>
+#include <QStringListModel>
+#include <QStandardItemModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+
+struct SongData {
+    QString title;
+    QString artist;
+    QString album;
+    QString genre;
+};
+
 
 class MainWindow : public QMainWindow
 {
@@ -36,6 +47,12 @@ private slots:
 
     void updateMemoryUsage();
 
+    void loadData(const QModelIndex &index);
+
+    void loadAndDisplayCSVData(const QString &csvFilePath);
+
+
+
 private:
     Ui::MainWindow *ui;
     QMediaPlayer *M_Player;
@@ -44,6 +61,7 @@ private:
     QTimer *timer;
     QStringList folderList;
     QStringListModel *folderListModel;
+    QStandardItemModel *metadataModel;
 
 };
 #endif // MAINWINDOW_H
