@@ -233,7 +233,18 @@ void MainWindow::on_Next_clicked()
 
 void MainWindow::on_Info_clicked()
 {
+    QModelIndex currentIndex = ui->metadataTableView->currentIndex();
 
+    if (currentIndex.isValid()) {
+        QString title = metadataModel->item(currentIndex.row(), 0)->text();
+        QString artist = metadataModel->item(currentIndex.row(), 1)->text();
+        QString length = metadataModel->item(currentIndex.row(), 2)->text();
+        QString genre = metadataModel->item(currentIndex.row(), 3)->text();
+
+        QString infoMessage = "Nombre: " + title + "\nArtista: " + artist + "\nDuración: " + length + "\nGénero: " + genre;
+
+        QMessageBox::information(this, tr("Información de la canción"), infoMessage);
+    }
 }
 
 
@@ -261,6 +272,7 @@ void MainWindow::on_Load_Library_clicked()
                 return;
             }
         }
+
 
         // Copiar los archivos y subdirectorios de la carpeta seleccionada
         QDir sourceDir(folderPath);
