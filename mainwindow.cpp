@@ -34,6 +34,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer, &QTimer::timeout, this, &MainWindow::updateMemoryUsage);
     progressBar = ui->progressBar;
 
+    connect(timerb, &QTimer::timeout, this, &MainWindow::updateProgressBar);
+    timer->start(1000); // Intervalo de actualización de 1 segundo
+    timerb->start(1000); // Intervalo de actualización de 1 segundo
+
     folderListModel = new QStringListModel(this);
     ui->folderListView->setModel(folderListModel);
 
@@ -174,12 +178,27 @@ void MainWindow::playAudio(const QModelIndex &index)
     ui->label->setText("Cancion: " + title );
 }
 
-void MainWindow::updateProgressBar(qint64 position)
+// Función para actualizar la barra de progreso
+void MainWindow::updateProgressBar()
 {
-    if (M_Player->duration() > 0) {
-        int progress = static_cast<int>((position * 100) / M_Player->duration());
+
+    QMediaPlayer::State playbackState = M_Player->state();
+    // Verifica si hay una canción en reproducción
+    if (playbackState == QMediaPlayer::PlayingState || playbackState == QMediaPlayer::PausedState) {
+        // Obtiene la duración total de la canción en milisegundos
+        qint64 duration = M_Player->duration();
+
+        // Obtiene el tiempo actual de reproducción en milisegundos
+        qint64 position = M_Player->position();
+
+        // Calcula el progreso como un porcentaje
+        int progress = static_cast<int>((position * 100) / duration);
+        // Actualiza la barra de progreso
         ui->progressBar->setValue(progress);
+    }else{
+        ui->progressBar->setValue(0);
     }
+
 }
 
 
@@ -324,7 +343,32 @@ void MainWindow::loadAndDisplayCSVDataFromFolder() {
 
 void MainWindow::on_sortButton_clicked()
 {
+    if (isSorted==false){
+        isSorted=true;
+    // Crear un modelo proxy para ordenar la tabla
+    QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(metadataModel);
 
+    // Establecer la columna por la que se va a ordenar (en este caso, la segunda columna)
+    proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive); // Opcional: hacer la ordenación insensible a mayúsculas y minúsculas
+    proxyModel->sort(1, Qt::AscendingOrder); // Ordenar por la columna 1 (la segunda columna) en orden ascendente
+
+    // Establecer el modelo proxy como modelo de la tabla
+    ui->metadataTableView->setModel(proxyModel);
+    }else{
+    isSorted=false;
+    // Crear un modelo proxy para ordenar la tabla
+    QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(metadataModel);
+
+    // Establecer la columna por la que se va a ordenar (en este caso, la segunda columna)
+    proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive); // Opcional: hacer la ordenación insensible a mayúsculas y minúsculas
+    proxyModel->sort(-1, Qt::AscendingOrder); // Ordenar por la columna 1 (la segunda columna) en orden ascendente
+
+    // Establecer el modelo proxy como modelo de la tabla
+    ui->metadataTableView->setModel(proxyModel);
+    }
 }
+
 
 

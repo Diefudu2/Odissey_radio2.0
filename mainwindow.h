@@ -53,7 +53,7 @@ private slots:
 
     void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    void updateProgressBar(qint64 position);
+    void updateProgressBar();
 
     void loadAndDisplayCSVDataFromFolder();
 
@@ -70,6 +70,7 @@ private:
     QStringList folderList;
     QStringListModel *folderListModel;
     QStandardItemModel *metadataModel;
+    bool isSorted = false;
 
 };
 #endif // MAINWINDOW_H
