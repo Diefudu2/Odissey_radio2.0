@@ -43,6 +43,8 @@ private slots:
 
     void updateMemoryUsage();
 
+    void on_sortButton_clicked();
+
     void loadData(const QModelIndex &index);
 
     void loadAndDisplayCSVData(const QString &csvFilePath);
@@ -53,6 +55,9 @@ private slots:
 
     void updateProgressBar(qint64 position);
 
+    void loadAndDisplayCSVDataFromFolder();
+
+    void onPaginateCheckBoxChanged(int state);
 
 private:
     Ui::MainWindow *ui;

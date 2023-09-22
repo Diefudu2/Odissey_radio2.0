@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(M_Player, &QMediaPlayer::positionChanged, this, &MainWindow::updateProgressBar);
 
+    connect(ui->paginateCheck, &QCheckBox::stateChanged, this, &MainWindow::onPaginateCheckBoxChanged);
 
 }
 
@@ -120,9 +121,12 @@ void MainWindow::loadData(const QModelIndex &index)
 
 void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
 {
-    // Borra el modelo actual
-    metadataModel->clear();
-    metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length","Genre"});
+    // Verificar el estado del checkBox
+    if (!ui->paginateCheck->isChecked()) {
+        // Si el checkBox no está marcado, borrar los datos del tableView
+        metadataModel->clear();
+        metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length", "Genre"});
+    }
 
     // Carga los metadatos desde el archivo CSV
     QFile file(csvFilePath);
@@ -138,17 +142,15 @@ void MainWindow::loadAndDisplayCSVData(const QString &csvFilePath)
                 QString title = fields[0];
                 QString artist = fields[1];
                 QString album = fields[2];
-                QString genre = fields [3];
+                QString genre = fields[3];
 
                 QList<QStandardItem*> row;
                 row << new QStandardItem(title)
                     << new QStandardItem(artist)
                     << new QStandardItem(album)
-                    << new QStandardItem(genre)
-                    ;
+                    << new QStandardItem(genre);
 
-
-                metadataModel->appendRow(row);
+                metadataModel->appendRow(row); // Agrega la fila al modelo existente
             }
         }
 
@@ -236,34 +238,93 @@ void MainWindow::on_Load_Library_clicked()
     if (!folderPath.isEmpty()) {
         QString folderName = QFileInfo(folderPath).fileName();
 
+        // Directorio del proyecto
+        QString projectDir = QDir::currentPath();
+
+        // Directorio de destino en el proyecto
+        QString destinationPath = projectDir + "/" + folderName;
+
+        // Directorio de destino "Paginacion" dentro del proyecto
+        QString paginationPath = projectDir + "/Paginacion";
+
+        // Verifica si el directorio de destino en el proyecto existe, y si no, créalo
+        if (!QDir().mkpath(destinationPath)) {
+            QMessageBox::warning(this, tr("Error"), tr("No se pudo crear la carpeta en el proyecto."));
+            return;
+        }
+
+        // Verifica si el directorio "Paginacion" existe, y si no, créalo
+        if (!QDir().mkpath(paginationPath)) {
+            QMessageBox::warning(this, tr("Error"), tr("No se pudo crear la carpeta 'Paginacion' en el proyecto."));
+            return;
+        }
+
+        // Copiar los archivos y subdirectorios de la carpeta seleccionada al directorio del proyecto
+        QDir sourceDir(folderPath);
+        QStringList files = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+        foreach (const QString &entry, files) {
+            QString srcEntryPath = folderPath + "/" + entry;
+            QString destEntryPath = destinationPath + "/" + entry;
+            QFile::copy(srcEntryPath, destEntryPath);
+        }
+
+        // Copiar los archivos y subdirectorios de la carpeta seleccionada a "Paginacion"
+        QStringList files2 = sourceDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+        foreach (const QString &entry, files2) {
+            QString srcEntryPath = folderPath + "/" + entry;
+            QString destEntryPath = paginationPath + "/" + entry;
+            QFile::copy(srcEntryPath, destEntryPath);
+        }
+
         // Agregar el nombre de la carpeta al modelo de datos
         QStringList folderList = folderListModel->stringList();
         folderList.append(folderName);
         folderListModel->setStringList(folderList);
 
-        // Copiar la carpeta seleccionada al directorio del proyecto
-        QString projectDir = QDir::currentPath(); // Obtener el directorio actual del proyecto
-        QString destinationPath = projectDir + "/" + folderName;
-
-        QDir destinationDir(destinationPath);
-
-        if (!destinationDir.exists()) {
-            if (!QDir().mkpath(destinationPath)) {
-                QMessageBox::warning(this, tr("Error"), tr("No se pudo crear la carpeta en el proyecto."));
-                return;
-            }
-        }
-
-
-        // Copiar los archivos y subdirectorios de la carpeta seleccionada
-        QDir sourceDir(folderPath);
-        QStringList files = sourceDir.entryList(QDir::Files);
-        foreach (const QString &file, files) {
-            QString srcFilePath = folderPath + "/" + file;
-            QString destFilePath = destinationPath + "/" + file;
-            QFile::copy(srcFilePath, destFilePath);
-        }
-
-        QMessageBox::information(this, tr("Éxito"), tr("La carpeta se ha cargado en el proyecto."));
+        QMessageBox::information(this, tr("Éxito"), tr("La carpeta y su contenido se han copiado en el proyecto y en la carpeta 'Paginacion'."));
     }
 }
+
+void MainWindow::onPaginateCheckBoxChanged(int state) {
+    if (state == Qt::Checked) {
+        // Cuando el checkBox está marcado (checked), cargar y mostrar los datos CSV
+        loadAndDisplayCSVDataFromFolder();
+    } else {
+        // Cuando el checkBox no está marcado (unchecked), borrar los datos del tableView
+        metadataModel->clear();
+    }
+}
+
+void MainWindow::loadAndDisplayCSVDataFromFolder() {
+    // Directorio de la carpeta en el proyecto
+    QString folderName = "Paginacion"; // Reemplaza con el nombre de tu carpeta
+    QString projectDir = QDir::currentPath(); // Obtener el directorio actual del proyecto
+    QString folderPath = projectDir + "/" + folderName;
+
+    // Verificar que la carpeta exista
+    QDir folderDir(folderPath);
+    if (!folderDir.exists()) {
+        QMessageBox::warning(this, tr("Error"), tr("La carpeta no existe."));
+        return;
+    }
+
+    // Obtener la lista de archivos CSV en la carpeta
+    QStringList csvFiles = folderDir.entryList(QStringList() << "*.csv", QDir::Files);
+
+    // Borrar el modelo actual
+    metadataModel->clear();
+    metadataModel->setHorizontalHeaderLabels({"Name", "Artist", "Length", "Genre"});
+
+    // Cargar los datos CSV de todos los archivos en la carpeta
+    foreach (const QString &csvFileName, csvFiles) {
+        QString csvFilePath = folderPath + "/" + csvFileName;
+        loadAndDisplayCSVData(csvFilePath);
+    }
+}
+
+void MainWindow::on_sortButton_clicked()
+{
+
+}
+
+

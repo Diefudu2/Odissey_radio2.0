@@ -154,7 +154,7 @@
      <string>%p%</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="paginateCheck">
     <property name="geometry">
      <rect>
       <x>170</x>
@@ -251,17 +251,17 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCheckBox" name="artistCheckBox">
+   <widget class="QPushButton" name="sortButton">
     <property name="geometry">
      <rect>
-      <x>581</x>
+      <x>650</x>
       <y>230</y>
-      <width>151</width>
-      <height>23</height>
+      <width>89</width>
+      <height>25</height>
      </rect>
     </property>
     <property name="text">
-     <string>Ordenar por artista</string>
+     <string>Sort</string>
     </property>
    </widget>
   </widget>
